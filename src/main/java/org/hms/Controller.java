@@ -1,11 +1,17 @@
 package org.hms;
 
+import org.hms.database.DataSource;
+import org.hms.database.User;
 import org.hms.input.handlers.LandingPageInputHandler;
 import org.hms.pages.PageBase;
 
 public class Controller {
     private final View view;
+
     private LandingPageInputHandler landingPageInputHandler;
+
+    private User userType = User.NULL;
+    private DataSource currentDataSource = null;
 
     private void initializeInputHandlers(View view) {
         landingPageInputHandler = new LandingPageInputHandler(view);
@@ -23,6 +29,22 @@ public class Controller {
             landingPageInputHandler.handleInput();
         }
 
+    }
+
+    public void setUserType(User userType) {
+        this.userType = userType;
+    }
+
+    public User getUserType() {
+        return userType;
+    }
+
+    public DataSource getCurrentDataSource() {
+        return currentDataSource;
+    }
+
+    public void setCurrentDataSource(DataSource currentDataSource) {
+        this.currentDataSource = currentDataSource;
     }
 
     public void start() {

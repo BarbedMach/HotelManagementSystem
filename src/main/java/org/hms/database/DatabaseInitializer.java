@@ -40,8 +40,9 @@ public class DatabaseInitializer {
         DataSource rootDb = new DataSource("root", "1234");
         try {
             Connection connection = rootDb.getConnection();
-            String sql = readFile("DDL.sql");
+            String sql = readFile("resources/DDL.sql");
             executeSQL(connection, sql);
+            DataSource.closeConnection(connection);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

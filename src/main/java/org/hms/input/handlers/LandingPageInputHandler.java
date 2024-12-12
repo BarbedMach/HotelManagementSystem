@@ -27,12 +27,12 @@ public class LandingPageInputHandler extends InputHandlerBase {
 
             switch (number) {
                 case 1 -> {
-                    view.display("LOGIN");
                     terminated = true;
+                    view.display("LOGIN");
                 }
                 case 2 -> {
-                    view.display("SIGN UP");
                     terminated = true;
+                    view.display("SIGN UP");
                 }
                 case 9 -> System.exit(0);
             }

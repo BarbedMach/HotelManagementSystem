@@ -14,6 +14,8 @@ public class Main {
 
         View view = new View();
         Controller controller = new Controller(view);
+        view.setController(controller);
+
         controller.start();
     }
 }

@@ -1,15 +1,14 @@
 package org.hms;
 
-import org.hms.pages.LandingPage;
-import org.hms.pages.LoginPage;
-import org.hms.pages.PageBase;
-import org.hms.pages.SignupPage;
+import org.hms.pages.*;
 
 import java.util.HashMap;
 
 public class View {
     private HashMap<String, PageBase> pages;
     private PageBase currentPage;
+
+    private Controller controller = null;
 
     private void insertPage(PageBase page) {
         pages.put(page.getName(), page);
@@ -20,12 +19,24 @@ public class View {
         insertPage(new LandingPage("LANDING"));
         insertPage(new LoginPage("LOGIN"));
         insertPage(new SignupPage("SIGN UP"));
+        insertPage(new AdminPanelPage("ADMINISTRATOR"));
+        insertPage(new GuestPanelPage("GUEST"));
+        insertPage(new HousekeeperPanelPage("HOUSEKEEPER"));
+        insertPage(new ReceptionistPanelPage("RECEPTIONIST"));
     }
 
     public View() {
         initializePages();
         currentPage = pages.get("LANDING");
         display();
+    }
+
+    public Controller getController() {
+        return controller;
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 
     public PageBase getPage(String name) {

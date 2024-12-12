@@ -23,7 +23,7 @@ public class DataSource {
         return dataSource.getConnection();
     }
 
-    public void closeConnection(Connection connection) throws RuntimeException {
+    public static void closeConnection(Connection connection) throws RuntimeException {
         try {
             connection.close();
         } catch (SQLException e) {

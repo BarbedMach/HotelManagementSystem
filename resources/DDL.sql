@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS hotel (
-                                     h_id INT PRIMARY KEY,
+                                     h_id INT AUTO_INCREMENT PRIMARY KEY,
                                      h_name VARCHAR(50) NOT NULL,
     h_zip VARCHAR(10),
     h_street VARCHAR(50),
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS room (
     );
 
 CREATE TABLE IF NOT EXISTS user (
-                                    u_id INT PRIMARY KEY,
-                                    u_name VARCHAR(50) NOT NULL,
+                                    u_id INT AUTO_INCREMENT PRIMARY KEY,
+                                    u_name VARCHAR(50) NOT NULL UNIQUE,
     u_phone_no VARCHAR(11),
     u_password VARCHAR(50) NOT NULL
     );
