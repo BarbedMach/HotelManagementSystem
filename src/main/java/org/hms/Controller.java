@@ -3,18 +3,21 @@ package org.hms;
 import org.hms.database.DataSource;
 import org.hms.database.User;
 import org.hms.input.handlers.LandingPageInputHandler;
+import org.hms.input.handlers.LoginPageInputHandler;
 import org.hms.pages.PageBase;
 
 public class Controller {
     private final View view;
 
     private LandingPageInputHandler landingPageInputHandler;
+    private LoginPageInputHandler loginPageInputHandler;
 
     private User userType = User.NULL;
     private DataSource currentDataSource = null;
 
     private void initializeInputHandlers(View view) {
         landingPageInputHandler = new LandingPageInputHandler(view);
+        loginPageInputHandler = new LoginPageInputHandler(view);
     }
 
     public Controller(View view) {
@@ -27,6 +30,10 @@ public class Controller {
 
         if (currentPage.equals(view.getPage("LANDING"))) {
             landingPageInputHandler.handleInput();
+        }
+
+        if (currentPage.equals(view.getPage("LOGIN"))) {
+            loginPageInputHandler.handleInput();
         }
 
     }

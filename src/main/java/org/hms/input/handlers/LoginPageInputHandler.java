@@ -179,7 +179,5 @@ public class LoginPageInputHandler extends InputHandlerBase {
                 case 9 -> System.exit(0);
             }
         }
-
-        scanner.close();
     }
 }
