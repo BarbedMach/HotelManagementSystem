@@ -27,7 +27,6 @@ public class LoginPageInputHandler extends InputHandlerBase {
         }
 
         username = scanner.nextLine();
-        scanner.close();
     }
 
     private void handlePassword() {
@@ -40,7 +39,6 @@ public class LoginPageInputHandler extends InputHandlerBase {
         }
 
         password = scanner.nextLine();
-        scanner.close();
     }
 
     private void handleLogin() throws Exception {
@@ -133,9 +131,7 @@ public class LoginPageInputHandler extends InputHandlerBase {
             case GUEST -> view.display("GUEST");
             case HOUSEKEEPER -> view.display("HOUSEKEEPER");
             case RECEPTIONIST -> view.display("RECEPTIONIST");
-            default -> {
-                return;
-            }
+            default -> {}
         }
     }
 
