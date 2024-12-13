@@ -7,6 +7,7 @@ import org.hms.database.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class LoginPageInputHandler extends InputHandlerBase {
@@ -27,6 +28,7 @@ public class LoginPageInputHandler extends InputHandlerBase {
         }
 
         username = scanner.nextLine();
+        System.out.println("Username set to: " + username);
     }
 
     private void handlePassword() {
@@ -41,15 +43,7 @@ public class LoginPageInputHandler extends InputHandlerBase {
         password = scanner.nextLine();
     }
 
-    private void handleLogin() throws Exception {
-        if (username == null || password == null) {
-            System.out.println("Username or password not entered!");
-            return;
-        }
-
-        DataSource dataSource = new DataSource("root", "1234");
-        Connection connection = dataSource.getConnection();
-
+    private boolean checkIfAdmin(Connection connection) throws SQLException {
         String checkIfAdminQuery = """
                 SELECT COUNT(*) FROM administrator
                 JOIN user ON administrator.a_id = user.u_id
@@ -61,13 +55,15 @@ public class LoginPageInputHandler extends InputHandlerBase {
         checkIfAdminStatement.setString(2, password);
 
         ResultSet checkIfAdminResultSet = checkIfAdminStatement.executeQuery();
-        int count = checkIfAdminResultSet.getInt(1);
 
-        if (count == 1) {
-            view.getController().setUserType(User.ADMIN);
-            return;
+        if (checkIfAdminResultSet.next()) {
+            int count = checkIfAdminResultSet.getInt(1);
+            return count == 1;
         }
+        return false;
+    }
 
+    private boolean checkIfGuest(Connection connection) throws SQLException {
         String checkIfGuestQuery = """
                 SELECT COUNT(*) FROM guest
                 JOIN user ON guest.g_id = user.u_id
@@ -79,13 +75,15 @@ public class LoginPageInputHandler extends InputHandlerBase {
         checkIfGuestStatement.setString(2, password);
 
         ResultSet checkIfGuestResultSet = checkIfGuestStatement.executeQuery();
-        count = checkIfGuestResultSet.getInt(1);
 
-        if (count == 1) {
-            view.getController().setUserType(User.GUEST);
-            return;
+        if (checkIfGuestResultSet.next()) {
+            int count = checkIfGuestResultSet.getInt(1);
+            return count == 1;
         }
+        return false;
+    }
 
+    private boolean checkIfHousekeeper(Connection connection) throws SQLException {
         String checkIfHousekeeperQuery = """
                 SELECT COUNT(*) FROM housekeeper
                 JOIN user ON housekeeper.hk_id = user.u_id
@@ -97,12 +95,15 @@ public class LoginPageInputHandler extends InputHandlerBase {
         checkIfHousekeeperStatement.setString(2, password);
 
         ResultSet checkIfHousekeeperResultSet = checkIfHousekeeperStatement.executeQuery();
-        count = checkIfHousekeeperResultSet.getInt(1);
 
-        if (count == 1) {
-            view.getController().setUserType(User.HOUSEKEEPER);
+        if (checkIfHousekeeperResultSet.next()) {
+            int count = checkIfHousekeeperResultSet.getInt(1);
+            return count == 1;
         }
+        return false;
+    }
 
+    private boolean checkIfReceptionist(Connection connection) throws SQLException {
         String checkIfReceptionistQuery = """
                SELECT COUNT(*) FROM receptionist
                JOIN user ON receptionist.r_id = user.u_id
@@ -114,9 +115,39 @@ public class LoginPageInputHandler extends InputHandlerBase {
         checkIfReceptionistStatement.setString(2, password);
 
         ResultSet checkIfReceptionistResultSet = checkIfReceptionistStatement.executeQuery();
-        count = checkIfReceptionistResultSet.getInt(1);
 
-        if (count == 1) {
+        if (checkIfReceptionistResultSet.next()) {
+            int count = checkIfReceptionistResultSet.getInt(1);
+            return count == 1;
+        }
+        return false;
+    }
+
+    private void handleLogin() throws Exception {
+        if (username == null || password == null) {
+            System.out.println("Username or password not entered!");
+            return;
+        }
+
+        DataSource dataSource = new DataSource("root", "1234");
+        Connection connection = dataSource.getConnection();
+
+        if (checkIfAdmin(connection)) {
+            view.getController().setUserType(User.ADMIN);
+            return;
+        }
+
+        if (checkIfGuest(connection)) {
+            view.getController().setUserType(User.GUEST);
+            return;
+        }
+
+        if (checkIfHousekeeper(connection)) {
+            view.getController().setUserType(User.HOUSEKEEPER);
+            return;
+        }
+
+        if (checkIfReceptionist(connection)) {
             view.getController().setUserType(User.RECEPTIONIST);
             return;
         }
