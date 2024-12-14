@@ -343,7 +343,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         roomType = scanner.nextLine();
 
         System.out.print("Enter capacity: ");
-        capacity = scanner.nextInt();
+        capacity = Integer.parseInt(scanner.nextLine());
 
         DataSource ds = new DataSource();
         Connection connection = ds.getConnection();
@@ -373,6 +373,57 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         }
 
         System.out.println("Room type added");
+    }
+
+    private void displayRoomTypes() throws SQLException {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT r_type, capacity
+                FROM roomtype
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+        System.out.println("Room Types and Capacities:");
+        System.out.println("---------------------------");
+        while (resultSet.next()) {
+            String roomType = resultSet.getString("r_type");
+            int capacity = resultSet.getInt("capacity");
+            System.out.printf("Room Type: %s, Capacity: %d%n", roomType, capacity);
+        }
+        System.out.println();
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+    }
+
+    private void deleteRoomType() throws SQLException {
+        String roomType;
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter room type to delete: ");
+        roomType = scanner.nextLine();
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                DELETE FROM roomtype
+                WHERE r_type = ?
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, roomType);
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to delete room type");
+        }
+
+        System.out.println("Room type deleted");
+        connection.close();
     }
 
     @Override
@@ -449,10 +500,19 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 }
                 case 12 -> {
                     try {
-
+                        displayRoomTypes();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
+                    view.display();
+                }
+                case 13 -> {
+                    try {
+                        deleteRoomType();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
                 }
                 case 14 -> {
                     terminated = true;
