@@ -119,12 +119,15 @@ public class SignupPageInputHandler extends InputHandlerBase {
             switch (number) {
                 case 1 -> {
                     handleUsername();
+                    view.display();
                 }
                 case 2 -> {
                     handlePassword();
+                    view.display();
                 }
                 case 3 -> {
                     handlePhoneNumber();
+                    view.display();
                 }
                 case 4 -> {
                     try {
@@ -133,10 +136,10 @@ public class SignupPageInputHandler extends InputHandlerBase {
                         username = null;
                         password = null;
                         phoneNumber = null;
-                        view.display("LANDING");
                     } catch (Exception e) {
                         System.out.println("Sign up failed.");
                     }
+                    view.display("LANDING");
                 }
                 case 8 -> {
                     terminated = true;

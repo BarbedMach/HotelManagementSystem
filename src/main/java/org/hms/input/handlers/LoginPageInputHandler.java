@@ -184,9 +184,11 @@ public class LoginPageInputHandler extends InputHandlerBase {
             switch (number) {
                 case 1 -> {
                     handleUsername();
+                    view.display();
                 }
                 case 2 -> {
                     handlePassword();
+                    view.display();
                 }
                 case 3 -> {
                     try {

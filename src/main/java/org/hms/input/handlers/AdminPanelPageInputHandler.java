@@ -3,7 +3,9 @@ package org.hms.input.handlers;
 import org.hms.View;
 import org.hms.database.DataSource;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -44,14 +46,14 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         }
 
         DataSource ds = new DataSource();
-        ds.getConnection();
+        Connection connection = ds.getConnection();
 
         String sql = """
                 INSERT INTO hotel (h_name, h_zip, h_street, h_building_no, h_phone_no)
                 VALUES (?, ?, ?, ?, ?)
                 """;
 
-        PreparedStatement preparedStatement = ds.getConnection().prepareStatement(sql);
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, hotelName);
         preparedStatement.setString(2, hotelZip);
         preparedStatement.setString(3, hotelStreet);
@@ -60,10 +62,168 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         int rowCount = preparedStatement.executeUpdate();
         if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
             throw new SQLException("Failed to add hotel");
         }
 
         System.out.println("Hotel added");
+        DataSource.closeConnection(connection);
+    }
+
+    private void displayHotels() throws SQLException {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT h_name, h_zip, h_street, h_building_no, h_phone_no
+                FROM hotel;
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            System.out.println("Hotel List:");
+            System.out.printf("%-20s %-10s %-20s %-15s %-15s%n", "Name", "ZIP", "Street", "Building No", "Phone No");
+
+            while (resultSet.next()) {
+                String name = resultSet.getString("h_name");
+                String zip = resultSet.getString("h_zip");
+                String street = resultSet.getString("h_street");
+                String buildingNo = resultSet.getString("h_building_no");
+                String phoneNo = resultSet.getString("h_phone_no");
+
+                System.out.printf("%-20s %-10s %-20s %-15s %-15s%n", name, zip, street, buildingNo, phoneNo);
+            }
+        } finally {
+            System.out.println();
+            preparedStatement.close();
+            connection.close();
+        }
+    }
+
+    private void deleteHotel() throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        String hotelName;
+
+        System.out.print("Enter hotel name to delete: ");
+        hotelName = scanner.nextLine();
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                DELETE FROM hotel
+                WHERE h_name = ?
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, hotelName);
+
+        System.out.println("Hotel to be deleted: " + hotelName);
+        System.out.print("Enter y/Y to add, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Deletion discarded");
+            connection.close();
+            return;
+        }
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to delete hotel");
+        }
+
+        System.out.println("Hotel deleted");
+        DataSource.closeConnection(connection);
+    }
+
+    private void addUser() throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        String type, name, password, phoneNo;
+
+        System.out.println("Enter user details");
+
+        System.out.print("Enter user type(R:receptionist, H:housekeeper): ");
+        type = scanner.nextLine();
+
+        System.out.print("Enter username: ");
+        name = scanner.nextLine();
+
+        System.out.print("Enter password: ");
+        password = scanner.nextLine();
+
+        System.out.print("Enter phone number: ");
+        phoneNo = scanner.nextLine();
+
+        System.out.println("User to be added");
+        System.out.println("Type: " + type + " Name: " + name + " Password: " + password + " Phone No: " + phoneNo);
+        System.out.print("Enter y/Y to add, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Add user process discarded");
+            return;
+        }
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String addUserSql = """
+                INSERT INTO user (u_name, u_phone_no, u_password)
+                VALUES (?, ?, ?)
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(addUserSql);
+        preparedStatement.setString(1, name);
+        preparedStatement.setString(2, phoneNo);
+        preparedStatement.setString(3, password);
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to add user");
+        }
+
+        String addReceptionistSql = """
+                INSERT INTO receptionist
+                SELECT u_id
+                FROM user
+                WHERE u_name = ? AND u_password = ?
+                """;
+
+        String addHousekeeperSql = """
+                INSERT INTO housekeeper
+                SELECT u_id
+                FROM user
+                WHERE u_name = ? AND u_password = ?
+                """;
+
+        if (type.equalsIgnoreCase("R")) {
+            PreparedStatement addReceptionistStatement = connection.prepareStatement(addReceptionistSql);
+            addReceptionistStatement.setString(1, name);
+            addReceptionistStatement.setString(2, password);
+
+            rowCount = addReceptionistStatement.executeUpdate();
+            if (rowCount <= 0) {
+                DataSource.closeConnection(connection);
+                throw new SQLException("Failed to add receptionist");
+            }
+        } else if (type.equalsIgnoreCase("H")) {
+            PreparedStatement addHousekeeperStatement = connection.prepareStatement(addHousekeeperSql);
+            addHousekeeperStatement.setString(1, name);
+            addHousekeeperStatement.setString(2, password);
+
+            rowCount = addHousekeeperStatement.executeUpdate();
+            if (rowCount <= 0) {
+                DataSource.closeConnection(connection);
+                throw new SQLException("Failed to add housekeeper");
+            }
+        } else {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Invalid user type");
+        }
+
+        System.out.println("User added");
+        connection.close();
     }
 
     @Override
@@ -85,10 +245,34 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 1 -> {
                     try {
                         addHotel();
-                        view.display();
                     } catch (SQLException e) {
                         System.out.println(e.getMessage());
                     }
+                    view.display();
+                }
+                case 2 -> {
+                    try {
+                        displayHotels();
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 3 -> {
+                    try {
+                        deleteHotel();
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 4 -> {
+                    try {
+                        addUser();
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
                 }
                 case 14 -> {
                     terminated = true;
