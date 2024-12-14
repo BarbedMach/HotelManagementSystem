@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS booking (
                                        check_out_date DATE,
                                        status VARCHAR(10),
     FOREIGN KEY (g_id) REFERENCES guest(g_id) ON DELETE SET NULL,
-    FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE SET NULL
+    FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE SET NULL,
     FOREIGN KEY (h_name) REFERENCES hotel(h_id) ON DELETE SET NULL
     );
 
