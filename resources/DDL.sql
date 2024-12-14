@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS hotel (
     h_zip VARCHAR(10),
     h_street VARCHAR(50),
     h_building_no VARCHAR(10),
-    h_phone_no VARCHAR(11)
+    h_phone_no VARCHAR(11),
+    INDEX idx_h_name (h_name)
     );
 
 CREATE TABLE IF NOT EXISTS roomtype (
