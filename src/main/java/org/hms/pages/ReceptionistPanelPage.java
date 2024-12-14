@@ -8,3 +8,7 @@ public class ReceptionistPanelPage extends PageBase {
         super(name, new HashMap<>());
     }
 }
+
+
+
+
