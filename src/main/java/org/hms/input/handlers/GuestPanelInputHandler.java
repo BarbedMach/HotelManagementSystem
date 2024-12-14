@@ -232,7 +232,12 @@ public class GuestPanelInputHandler extends InputHandlerBase {
                     displayMyBooking();
                     break;
                 case "4":
-                    cancelBookingForGuest();
+                    try {
+                        cancelBookingForGuest();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
                     break;
                 case "5":
                     System.out.println("Exiting Guest Panel...");
