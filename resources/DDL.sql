@@ -77,13 +77,15 @@ CREATE TABLE IF NOT EXISTS housekeeping_rooms (
 CREATE TABLE IF NOT EXISTS booking (
                                        b_id INT AUTO_INCREMENT PRIMARY KEY,
                                        g_id INT NOT NULL,
+                                       h_name VARCHAR(50) NOT NULL,
                                        r_id INT,
                                        total_guests INT,
                                        check_in_date DATE,
                                        check_out_date DATE,
                                        status VARCHAR(10),
-    FOREIGN KEY (g_id) REFERENCES guest(g_id) ON DELETE CASCADE,
+    FOREIGN KEY (g_id) REFERENCES guest(g_id) ON DELETE SET NULL,
     FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE SET NULL
+    FOREIGN KEY (h_name) REFERENCES hotel(h_id) ON DELETE SET NULL
     );
 
 CREATE TABLE IF NOT EXISTS reservations (

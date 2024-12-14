@@ -41,7 +41,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         String decision = scanner.nextLine();
         if (!decision.equalsIgnoreCase("Y")) {
-            System.out.println("Add hotel process discarded");
+            System.out.println("Operation discarded");
             return;
         }
 
@@ -122,7 +122,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         String decision = scanner.nextLine();
         if (!decision.equalsIgnoreCase("Y")) {
-            System.out.println("Deletion discarded");
+            System.out.println("Operation discarded");
             connection.close();
             return;
         }
@@ -161,7 +161,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         String decision = scanner.nextLine();
         if (!decision.equalsIgnoreCase("Y")) {
-            System.out.println("Add user process discarded");
+            System.out.println("Operation discarded");
             return;
         }
 
@@ -317,7 +317,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         String decision = scanner.nextLine();
         if (!decision.equalsIgnoreCase("Y")) {
-            System.out.println("Deletion discarded");
+            System.out.println("Operation discarded");
             connection.close();
             return;
         }
@@ -330,6 +330,49 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         System.out.println("User deleted");
         DataSource.closeConnection(connection);
+    }
+
+    private void addRoomType() throws SQLException {
+        String roomType;
+        int capacity;
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter room type details");
+        System.out.print("Enter room type: ");
+        roomType = scanner.nextLine();
+
+        System.out.print("Enter capacity: ");
+        capacity = scanner.nextInt();
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        System.out.println("Room type to add: " + roomType + ", capacity: " + capacity);
+        System.out.print("Enter y/Y to add, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Operation discarded");
+            connection.close();
+            return;
+        }
+
+        String sql = """
+                INSERT INTO roomtype (r_type, capacity)
+                VALUES (?, ?)
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, roomType);
+        preparedStatement.setInt(2, capacity);
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to add room type");
+        }
+
+        System.out.println("Room type added");
     }
 
     @Override
@@ -351,7 +394,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 1 -> {
                     try {
                         addHotel();
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
                     view.display();
@@ -359,7 +402,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 2 -> {
                     try {
                         displayHotels();
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
                     view.display();
@@ -367,7 +410,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 3 -> {
                     try {
                         deleteHotel();
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
                     view.display();
@@ -375,7 +418,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 4 -> {
                     try {
                         addUser();
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
                     view.display();
@@ -383,7 +426,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 5 -> {
                     try {
                         displayUsers();
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
                     view.display();
@@ -391,8 +434,22 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 6 -> {
                     try {
                         deleteUser();
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 11 -> {
+                    try {
+                        addRoomType();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 12 -> {
+                    try {
+
                     }
                 }
                 case 14 -> {
