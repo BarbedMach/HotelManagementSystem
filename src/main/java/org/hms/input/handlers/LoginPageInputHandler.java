@@ -123,6 +123,11 @@ public class LoginPageInputHandler extends InputHandlerBase {
         return false;
     }
 
+    private void setUser() {
+        view.getController().setUsername(username);
+        view.getController().setPassword(password);
+    }
+
     private void handleLogin() throws Exception {
         if (username == null || password == null) {
             System.out.println("Username or password not entered!");
@@ -134,21 +139,25 @@ public class LoginPageInputHandler extends InputHandlerBase {
 
         if (checkIfAdmin(connection)) {
             view.getController().setUserType(User.ADMIN);
+            setUser();
             return;
         }
 
         if (checkIfGuest(connection)) {
             view.getController().setUserType(User.GUEST);
+            setUser();
             return;
         }
 
         if (checkIfHousekeeper(connection)) {
             view.getController().setUserType(User.HOUSEKEEPER);
+            setUser();
             return;
         }
 
         if (checkIfReceptionist(connection)) {
             view.getController().setUserType(User.RECEPTIONIST);
+            setUser();
             return;
         }
 

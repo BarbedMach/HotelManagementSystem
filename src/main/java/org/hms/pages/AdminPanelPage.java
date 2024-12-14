@@ -11,6 +11,10 @@ public class AdminPanelPage extends PageBase {
         super.getOptions().put(4, "Add User");
         super.getOptions().put(5, "Display Users");
         super.getOptions().put(6, "Delete User");
+        super.getOptions().put(7, "Add Room");
+        super.getOptions().put(8, "Display Rooms");
+        super.getOptions().put(9, "Delete Room");
+        super.getOptions().put(10, "Manage Room Status");
         super.getOptions().put(14, "Log Out and Return to Main Menu");
         super.getOptions().put(15, "Exit");
     }

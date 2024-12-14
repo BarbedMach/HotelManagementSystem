@@ -17,6 +17,10 @@ public class Controller {
     private AdminPanelPageInputHandler adminPanelPageInputHandler;
 
     private User userType = User.NULL;
+
+    private String username = "";
+    private String password = "";
+
     private DataSource currentDataSource = null;
 
     private void initializeInputHandlers(View view) {
@@ -50,6 +54,22 @@ public class Controller {
             adminPanelPageInputHandler.handleInput();
         }
 
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setUserType(User userType) {
