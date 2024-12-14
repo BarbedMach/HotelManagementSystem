@@ -226,6 +226,112 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         connection.close();
     }
 
+    private void displayUsers() throws SQLException {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String guests = """
+                SELECT u_name, u_phone_no
+                FROM user
+                JOIN guest ON user.u_id = guest.g_id
+                """;
+        PreparedStatement guestStatement = connection.prepareStatement(guests);
+        ResultSet guestResultSet = guestStatement.executeQuery();
+
+        System.out.println("Guests:");
+        System.out.printf("%-20s %-15s%n", "Name", "Phone Number");
+        System.out.println("------------------------------------");
+        while (guestResultSet.next()) {
+            String name = guestResultSet.getString("u_name");
+            String phone = guestResultSet.getString("u_phone_no");
+            System.out.printf("%-20s %-15s%n", name, phone);
+        }
+        guestResultSet.close();
+        System.out.println();
+
+        String receptionists = """
+                SELECT u_name, u_phone_no, u_password
+                FROM user
+                JOIN receptionist ON user.u_id = receptionist.r_id
+                """;
+        PreparedStatement receptionistStatement = connection.prepareStatement(receptionists);
+        ResultSet receptionistResultSet = receptionistStatement.executeQuery();
+
+        System.out.println("Receptionists:");
+        System.out.printf("%-20s %-15s %-20s%n", "Name", "Phone Number", "Password");
+        System.out.println("------------------------------------------------------------");
+        while (receptionistResultSet.next()) {
+            String name = receptionistResultSet.getString("u_name");
+            String phone = receptionistResultSet.getString("u_phone_no");
+            String password = receptionistResultSet.getString("u_password");
+            System.out.printf("%-20s %-15s %-20s%n", name, phone, password);
+        }
+        receptionistResultSet.close();
+        System.out.println();
+
+        String housekeepers = """
+                SELECT u_name, u_phone_no, u_password
+                FROM user
+                JOIN housekeeper ON user.u_id = housekeeper.hk_id
+                """;
+        PreparedStatement housekeeperStatement = connection.prepareStatement(housekeepers);
+        ResultSet housekeeperResultSet = housekeeperStatement.executeQuery();
+
+        System.out.println("Housekeepers:");
+        System.out.printf("%-20s %-15s %-20s%n", "Name", "Phone Number", "Password");
+        System.out.println("------------------------------------------------------------");
+        while (housekeeperResultSet.next()) {
+            String name = housekeeperResultSet.getString("u_name");
+            String phone = housekeeperResultSet.getString("u_phone_no");
+            String password = housekeeperResultSet.getString("u_password");
+            System.out.printf("%-20s %-15s %-20s%n", name, phone, password);
+        }
+        housekeeperResultSet.close();
+        System.out.println();
+
+        connection.close();
+    }
+
+    private void deleteUser() throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter username to delete: ");
+        String userName = scanner.nextLine();
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                DELETE FROM user
+                WHERE u_name = ? AND NOT EXISTS (
+                       SELECT 1
+                       FROM administrator
+                       WHERE user.u_id = administrator.a_id
+                );
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, userName);
+
+        System.out.println("User to be deleted: " + userName);
+        System.out.print("Enter y/Y to add, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Deletion discarded");
+            connection.close();
+            return;
+        }
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to delete user");
+        }
+
+        System.out.println("User deleted");
+        DataSource.closeConnection(connection);
+    }
+
     @Override
     public void handleInput() {
         boolean terminated = false;
@@ -273,6 +379,21 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                         System.out.println(e.getMessage());
                     }
                     view.display();
+                }
+                case 5 -> {
+                    try {
+                        displayUsers();
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 6 -> {
+                    try {
+                        deleteUser();
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
                 case 14 -> {
                     terminated = true;
