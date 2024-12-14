@@ -456,6 +456,15 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         preparedStatement.setString(3, "available");
         preparedStatement.setString(4, hotelName);
 
+        System.out.print("Enter y/Y to confirm, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Operation discarded");
+            connection.close();
+            return;
+        }
+
         int rowCount = preparedStatement.executeUpdate();
         if (rowCount <= 0) {
             DataSource.closeConnection(connection);
@@ -463,6 +472,135 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         }
 
         System.out.println("Room added");
+        connection.close();
+    }
+
+    public void displayRooms() throws SQLException {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT hotel.h_name, room.r_id, room.r_type, roomtype.capacity, room.r_status
+                FROM room
+                JOIN roomtype ON room.r_type = roomtype.r_type
+                JOIN hotel ON hotel.h_id = room.h_id
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.println("----------------------------------------------------------------------------------");
+        System.out.printf("%-20s %-10s %-15s %-10s %-15s%n", "Hotel Name", "Room ID", "Room Type", "Capacity", "Status");
+        System.out.println("----------------------------------------------------------------------------------");
+
+        while (resultSet.next()) {
+            String hotelName = resultSet.getString("h_name");
+            int roomId = resultSet.getInt("r_id");
+            String roomType = resultSet.getString("r_type");
+            int capacity = resultSet.getInt("capacity");
+            String roomStatus = resultSet.getString("r_status");
+
+            System.out.printf("%-20s %-10d %-15s %-10d %-15s%n", hotelName, roomId, roomType, capacity, roomStatus);
+        }
+        System.out.println();
+        resultSet.close();
+        connection.close();
+    }
+
+    private void deleteRoom() throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter room details to delete");
+        System.out.print("Enter hotel name: ");
+        String hotelName = scanner.nextLine();
+
+        System.out.print("Enter room number: ");
+        int roomId = Integer.parseInt(scanner.nextLine());
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                DELETE r
+                FROM room r
+                JOIN hotel h ON r.h_id = h.h_id
+                WHERE h.h_name = ? AND r.r_id = ?
+                """;
+
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, hotelName);
+        preparedStatement.setInt(2, roomId);
+
+        System.out.print("Enter y/Y to confirm, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Operation discarded");
+            connection.close();
+            return;
+        }
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to delete room");
+        }
+
+        System.out.println("Room deleted");
+        connection.close();
+    }
+
+    private void editRoomStatus() throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter room details to edit");
+        System.out.print("Enter hotel name: ");
+        String hotelName = scanner.nextLine();
+
+        System.out.print("Enter room number: ");
+        int roomId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter new room status(A:available, R:reservation_pending, P:payment_pending, B:booked): ");
+        String status = scanner.nextLine();
+
+        switch (status) {
+            case "A" -> status = "available";
+            case "R" -> status = "r_pending";
+            case "P" -> status = "p_pending";
+            case "B" -> status = "booked";
+            default -> {
+                System.out.println("Invalid status.");
+                return;
+            }
+        }
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                UPDATE room r
+                JOIN hotel h ON r.h_id = h.h_id
+                SET r.r_status = ?
+                WHERE h.h_name = ? AND r.r_id = ?;
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, status);
+        preparedStatement.setString(2, hotelName);
+        preparedStatement.setInt(3, roomId);
+
+        System.out.print("Enter y/Y to confirm, anything else to discard: ");
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Operation discarded");
+            connection.close();
+            return;
+        }
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to edit room");
+        }
+
+        System.out.println("Room edited");
         connection.close();
     }
 
@@ -533,6 +671,30 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 7 -> {
                     try {
                         addRoom();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 8 -> {
+                    try {
+                        displayRooms();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 9 -> {
+                    try {
+                        deleteRoom();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 10 -> {
+                    try {
+                        editRoomStatus();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
