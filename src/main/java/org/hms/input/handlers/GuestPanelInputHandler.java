@@ -218,47 +218,65 @@ public class GuestPanelInputHandler extends InputHandlerBase {
         connection.close();
     }
     public void handleInput() {
-
-        boolean terminated = false;
         Scanner scanner = new Scanner(System.in);
-        int number = scanner.nextInt();
-        switch (number) {
-            case 1 -> {
-                try {
-                    addNewBooking();
-                } catch (SQLException e) {
-                    System.err.println("Error while adding booking: " + e.getMessage());
+        boolean terminated = false;
+
+        while (!terminated) {
+
+            System.out.print("Enter number: ");
+
+            while(!scanner.hasNextInt()) {
+                System.out.print("Enter number: ");
+                scanner.next();
+            }
+
+            int number = scanner.nextInt();
+
+            switch (number) {
+                case 1 -> {
+                    try {
+                        addNewBooking();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 2 -> {
+                    try {
+                        displayAvailableRooms();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 3 -> {
+                    try {
+                        displayMyBooking();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 4 -> {
+                    try {
+                        cancelBookingForGuest();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 8 -> {
+                    terminated = true;
+                    view.display("LANDING");
+                }
+                case 9 -> {
+                    System.exit(0);
                 }
             }
-            case 2 -> {
-                try {
-                    displayAvailableRooms();
-                } catch (SQLException e) {
-                    System.err.println("Error while displaying available rooms: " + e.getMessage());
-                }
-            }
-            case 3 -> {
-                try {
-                    displayMyBooking();
-                } catch (SQLException e) {
-                    System.err.println("Error while displaying your bookings: " + e.getMessage());
-                }
-            }
-            case 4 -> {
-                try {
-                    cancelBookingForGuest();
-                } catch (SQLException e) {
-                    System.err.println("Error while canceling the booking: " + e.getMessage());
-                }
-            }
-            case 9 -> {
-                terminated = true;
-                System.out.println("Exiting Guest Panel...");
-            }
-            default -> System.out.println("Invalid choice. Please try again.");
-        }
+
         }
     }
+}
 
 
 
