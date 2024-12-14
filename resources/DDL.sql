@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS housekeeping_rooms (
     );
 
 CREATE TABLE IF NOT EXISTS booking (
-                                       b_id INT PRIMARY KEY,
+                                       b_id INT AUTO_INCREMENT PRIMARY KEY,
                                        g_id INT NOT NULL,
                                        r_id INT,
                                        total_guests INT,
