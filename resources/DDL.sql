@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS housekeeping_rooms (
                                                   t_id INT,
                                                   r_id INT,
                                                   PRIMARY KEY (t_id, r_id),
+                                                  status VARCHAR(10),
     FOREIGN KEY (t_id) REFERENCES housekeeping_schedule(t_id) ON DELETE CASCADE,
     FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE CASCADE
     );
