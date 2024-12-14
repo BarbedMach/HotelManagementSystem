@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS booking (
                                        check_out_date DATE,
                                        status VARCHAR(10),
     FOREIGN KEY (g_id) REFERENCES guest(g_id) ON DELETE CASCADE,
-    FOREIGN KEY (h_name) REFERENCES hotel(h_id) ON DELETE CASCADE
+    FOREIGN KEY (h_name) REFERENCES hotel(h_name) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS reservations (
