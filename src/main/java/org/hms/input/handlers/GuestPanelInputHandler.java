@@ -199,7 +199,7 @@ public class GuestPanelInputHandler extends InputHandlerBase {
             return;
         }
 
-        // Rezervasyon iptal etme sorgusu
+
         String sqlCancel = "DELETE FROM booking WHERE b_id = ?";
 
         PreparedStatement preparedStatementCancel = connection.prepareStatement(sqlCancel);

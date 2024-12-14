@@ -2,10 +2,7 @@ package org.hms;
 
 import org.hms.database.DataSource;
 import org.hms.database.User;
-import org.hms.input.handlers.AdminPanelPageInputHandler;
-import org.hms.input.handlers.LandingPageInputHandler;
-import org.hms.input.handlers.LoginPageInputHandler;
-import org.hms.input.handlers.SignupPageInputHandler;
+import org.hms.input.handlers.*;
 import org.hms.pages.PageBase;
 
 public class Controller {
@@ -15,6 +12,7 @@ public class Controller {
     private LoginPageInputHandler loginPageInputHandler;
     private SignupPageInputHandler signupPageInputHandler;
     private AdminPanelPageInputHandler adminPanelPageInputHandler;
+    private GuestPanelInputHandler guestPanelInputHandler;
 
     private User userType = User.NULL;
 
@@ -28,6 +26,7 @@ public class Controller {
         loginPageInputHandler = new LoginPageInputHandler(view);
         signupPageInputHandler = new SignupPageInputHandler(view);
         adminPanelPageInputHandler = new AdminPanelPageInputHandler(view);
+        guestPanelInputHandler = new GuestPanelInputHandler(view);
     }
 
     public Controller(View view) {
@@ -52,6 +51,9 @@ public class Controller {
 
         if (currentPage.equals(view.getPage("ADMINISTRATOR"))) {
             adminPanelPageInputHandler.handleInput();
+        }
+        if (currentPage.equals(view.getPage("GUEST"))){
+            guestPanelInputHandler.handleInput();
         }
 
     }
