@@ -450,6 +450,8 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 12 -> {
                     try {
 
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
                     }
                 }
                 case 14 -> {
