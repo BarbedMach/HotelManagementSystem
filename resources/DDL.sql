@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS hotel (
                                      h_id INT AUTO_INCREMENT PRIMARY KEY,
-                                     h_name VARCHAR(50) NOT NULL,
+                                     h_name VARCHAR(50) NOT NULL UNIQUE,
     h_zip VARCHAR(10),
     h_street VARCHAR(50),
     h_building_no VARCHAR(10),

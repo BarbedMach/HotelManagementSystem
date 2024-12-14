@@ -2,6 +2,7 @@ package org.hms;
 
 import org.hms.database.DataSource;
 import org.hms.database.User;
+import org.hms.input.handlers.AdminPanelPageInputHandler;
 import org.hms.input.handlers.LandingPageInputHandler;
 import org.hms.input.handlers.LoginPageInputHandler;
 import org.hms.input.handlers.SignupPageInputHandler;
@@ -13,6 +14,7 @@ public class Controller {
     private LandingPageInputHandler landingPageInputHandler;
     private LoginPageInputHandler loginPageInputHandler;
     private SignupPageInputHandler signupPageInputHandler;
+    private AdminPanelPageInputHandler adminPanelPageInputHandler;
 
     private User userType = User.NULL;
     private DataSource currentDataSource = null;
@@ -21,6 +23,7 @@ public class Controller {
         landingPageInputHandler = new LandingPageInputHandler(view);
         loginPageInputHandler = new LoginPageInputHandler(view);
         signupPageInputHandler = new SignupPageInputHandler(view);
+        adminPanelPageInputHandler = new AdminPanelPageInputHandler(view);
     }
 
     public Controller(View view) {
@@ -41,6 +44,10 @@ public class Controller {
 
         if (currentPage.equals(view.getPage("SIGN UP"))) {
             signupPageInputHandler.handleInput();
+        }
+
+        if (currentPage.equals(view.getPage("ADMINISTRATOR"))) {
+            adminPanelPageInputHandler.handleInput();
         }
 
     }

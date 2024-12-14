@@ -19,6 +19,10 @@ public class DataSource {
         }
     }
 
+    public DataSource() {
+        this("root", "1234");
+    }
+
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
