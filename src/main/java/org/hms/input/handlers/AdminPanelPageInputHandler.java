@@ -137,7 +137,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         DataSource.closeConnection(connection);
     }
 
-    private void addUser() throws SQLException {
+    private void addUser() throws Exception {
         Scanner scanner = new Scanner(System.in);
         String type, name, password, phoneNo;
 
@@ -226,7 +226,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         connection.close();
     }
 
-    private void displayUsers() throws SQLException {
+    private void displayUsers() throws Exception {
         DataSource ds = new DataSource();
         Connection connection = ds.getConnection();
 
@@ -292,7 +292,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         connection.close();
     }
 
-    private void deleteUser() throws SQLException {
+    private void deleteUser() throws Exception {
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter username to delete: ");
@@ -332,7 +332,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         DataSource.closeConnection(connection);
     }
 
-    private void addRoomType() throws SQLException {
+    private void addRoomType() throws Exception {
         String roomType;
         int capacity;
 
@@ -375,7 +375,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         System.out.println("Room type added");
     }
 
-    private void displayRoomTypes() throws SQLException {
+    private void displayRoomTypes() throws Exception {
         DataSource ds = new DataSource();
         Connection connection = ds.getConnection();
 
@@ -423,6 +423,46 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         }
 
         System.out.println("Room type deleted");
+        connection.close();
+    }
+
+    private void addRoom() throws SQLException {
+        String hotelName, roomType;
+        int roomId;
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter room details");
+        System.out.print("Enter hotel name: ");
+        hotelName = scanner.nextLine();
+
+        System.out.print("Enter room number: ");
+        roomId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter room type: ");
+        roomType = scanner.nextLine();
+
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                INSERT INTO room (r_id, h_id, r_type, r_status)
+                SELECT ?, h_id, ?, ?
+                FROM hotel
+                WHERE hotel.h_name = ?
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, roomId);
+        preparedStatement.setString(2, roomType);
+        preparedStatement.setString(3, "available");
+        preparedStatement.setString(4, hotelName);
+
+        int rowCount = preparedStatement.executeUpdate();
+        if (rowCount <= 0) {
+            DataSource.closeConnection(connection);
+            throw new SQLException("Failed to add room");
+        }
+
+        System.out.println("Room added");
         connection.close();
     }
 
@@ -490,6 +530,14 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                     }
                     view.display();
                 }
+                case 7 -> {
+                    try {
+                        addRoom();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
                 case 11 -> {
                     try {
                         addRoomType();
@@ -514,11 +562,11 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                     }
                     view.display();
                 }
-                case 14 -> {
+                case 90 -> {
                     terminated = true;
                     view.display("LANDING");
                 }
-                case 15 -> System.exit(0);
+                case 99 -> System.exit(0);
             }
         }
     }
