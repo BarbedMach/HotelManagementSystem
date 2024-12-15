@@ -6,6 +6,7 @@ import org.hms.database.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ReceptionistPanelInputHandler extends InputHandlerBase {
@@ -305,7 +306,76 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
     }
 
     private void processPayment() throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
 
+        System.out.print("Enter guest name: ");
+        String guestName = scanner.nextLine();
+
+        System.out.println("Enter payment details");
+        String retrieveRelevantBookings = """
+                SELECT b_id, total_guests, check_in_date, check_out_date, status
+                FROM booking
+                JOIN user ON booking.g_id = user.u_id
+                WHERE user.u_name = ? AND booking.status = 'p_pending'
+                """;
+        PreparedStatement statement = connection.prepareStatement(retrieveRelevantBookings);
+        statement.setString(1, guestName);
+
+        ResultSet resultSet = statement.executeQuery();
+
+        System.out.printf("%-10s %-15s %-15s %-15s %-15s%n", "Booking ID", "Total Guests", "Check-in Date", "Check-out Date", "Status");
+        System.out.println("------------------------------------------------------------");
+
+        while (resultSet.next()) {
+            int bId = resultSet.getInt("b_id");
+            int totalGuests = resultSet.getInt("total_guests");
+            String checkInDate = resultSet.getString("check_in_date");
+            String checkOutDate = resultSet.getString("check_out_date");
+            String status = resultSet.getString("status");
+
+            System.out.printf("%-10d %-15d %-15s %-15s %-15s%n", bId, totalGuests, checkInDate, checkOutDate, status);
+        }
+        System.out.println();
+
+        System.out.print("Enter booking ID: ");
+        int bookingId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter payment amount: ");
+        double paymentAmount = Double.parseDouble(scanner.nextLine());
+
+        connection.setAutoCommit(false);
+
+        String insertPaymentSql = """
+                INSERT INTO payments (b_id, status, amount, payment_date)
+                VALUES (?, 'paid', ?, CURRENT_DATE)
+                """;
+        PreparedStatement insertPaymentStatement = connection.prepareStatement(insertPaymentSql);
+        insertPaymentStatement.setInt(1, bookingId);
+        insertPaymentStatement.setDouble(2, paymentAmount);
+
+        int rowCount = insertPaymentStatement.executeUpdate();
+        if (rowCount == 0) {
+            connection.rollback();
+            throw new SQLException("Failed to insert payment.");
+        }
+
+        String updateBookingStatusSql = """
+                UPDATE booking
+                SET status = 'booked'
+                WHERE b_id = ?
+                """;
+        PreparedStatement updateBookingStatusStatement = connection.prepareStatement(updateBookingStatusSql);
+        rowCount = updateBookingStatusStatement.executeUpdate();
+        if (rowCount == 0) {
+            connection.rollback();
+            throw new SQLException("Failed to update payment.");
+        }
+
+        connection.commit();
+        System.out.println("Payment successfully processed and booking status updated.");
+        connection.close();
     }
 
     @Override
