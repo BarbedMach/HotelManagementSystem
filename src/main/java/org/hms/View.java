@@ -47,10 +47,6 @@ public class View {
         return currentPage;
     }
 
-    public void setCurrentPage(PageBase currentPage) {
-        this.currentPage = currentPage;
-    }
-
     public void display() {
         currentPage.display();
     }

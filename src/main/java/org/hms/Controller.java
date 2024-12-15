@@ -13,6 +13,7 @@ public class Controller {
     private SignupPageInputHandler signupPageInputHandler;
     private AdminPanelPageInputHandler adminPanelPageInputHandler;
     private GuestPanelInputHandler guestPanelInputHandler;
+    private ReceptionistPanelInputHandler receptionistPanelInputHandler;
 
     private User userType = User.NULL;
 
@@ -27,6 +28,7 @@ public class Controller {
         signupPageInputHandler = new SignupPageInputHandler(view);
         adminPanelPageInputHandler = new AdminPanelPageInputHandler(view);
         guestPanelInputHandler = new GuestPanelInputHandler(view);
+        receptionistPanelInputHandler = new ReceptionistPanelInputHandler(view);
     }
 
     public Controller(View view) {
@@ -52,18 +54,19 @@ public class Controller {
         if (currentPage.equals(view.getPage("ADMINISTRATOR"))) {
             adminPanelPageInputHandler.handleInput();
         }
+
         if (currentPage.equals(view.getPage("GUEST"))){
             guestPanelInputHandler.handleInput();
+        }
+
+        if (currentPage.equals(view.getPage("RECEPTIONIST"))) {
+            receptionistPanelInputHandler.handleInput();
         }
 
     }
 
     public String getUsername() {
         return username;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setUsername(String username) {
