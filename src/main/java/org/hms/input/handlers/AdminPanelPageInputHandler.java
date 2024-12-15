@@ -639,6 +639,81 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         connection.close();
     }
 
+    private void viewMostBookedRoomTypes() throws Exception {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT room.r_type AS RoomType, COUNT(*) AS BookingCount
+                FROM reservations
+                JOIN room ON reservations.r_id = room.r_id
+                GROUP BY room.r_type
+                ORDER BY COUNT(*) DESC
+                LIMIT 5
+                """;
+
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.printf("%-20s %-15s%n", "Room Type", "Booking Count");
+        System.out.println("---------------------------------------");
+
+        while (resultSet.next()) {
+            String roomType = resultSet.getString("RoomType");
+            int bookingCount = resultSet.getInt("BookingCount");
+
+            System.out.printf("%-20s %-15d%n", roomType, bookingCount);
+        }
+        System.out.println();
+
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+    }
+
+    private void displayAllHousekeepingRecords() throws Exception {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT t_start_date AS Start,
+                       t_end_time AS End,
+                       status AS Status,
+                       h_name AS Hotel,
+                       housekeeping_rooms.r_id AS Room,
+                       u_name AS Staff
+                FROM housekeeping_schedule
+                LEFT JOIN housekeeping_rooms ON housekeeping_schedule.t_id = housekeeping_rooms.t_id
+                LEFT JOIN housekeeping_staff ON housekeeping_schedule.t_id = housekeeping_staff.t_id
+                JOIN user ON housekeeping_staff.hk_id = user.u_id
+                JOIN room ON room.r_id = housekeeping_rooms.r_id
+                JOIN hotel ON hotel.h_id = room.h_id
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.printf("%-15s %-15s %-10s %-20s %-10s %-20s%n",
+                "Start", "End", "Status", "Hotel", "Room", "Staff");
+        System.out.println("-------------------------------------------------------------------------------------------");
+
+        while (resultSet.next()) {
+            String start = resultSet.getString("Start");
+            String end = resultSet.getString("End");
+            String status = resultSet.getString("Status");
+            String hotel = resultSet.getString("Hotel");
+            int room = resultSet.getInt("Room");
+            String staff = resultSet.getString("Staff");
+
+            System.out.printf("%-15s %-15s %-10s %-20s %-10d %-20s%n",
+                    start, end, status, hotel, room, staff);
+        }
+        System.out.println();
+
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+    }
+
     @Override
     public void handleInput() {
         boolean terminated = false;
@@ -762,6 +837,22 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 14 -> {
                     try {
                         displayAllBookingRecords();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 15 -> {
+                    try {
+                        viewMostBookedRoomTypes();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 16 -> {
+                    try {
+                        displayAllHousekeepingRecords();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
