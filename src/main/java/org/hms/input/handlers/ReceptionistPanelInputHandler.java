@@ -163,16 +163,115 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
         }
 
         int rowCount = preparedStatement.executeUpdate();
+
+        ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+
         if (rowCount == 0) {
             connection.close();
             throw new Exception("Failed to add new task");
         }
 
         System.out.println("New housekeeping task added");
+
+        if (generatedKeys.next()) {
+            int id = generatedKeys.getInt(1);
+            System.out.println("Generated task ID: " + id);
+        }
+
         connection.close();
     }
 
     private void assignHousekeepingTask() throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT t_id, t_start_date, t_end_date, status
+                FROM housekeeping_schedule
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.printf("%-10s %-15s %-15s %-10s%n", "Task ID", "Start Date", "End Date", "Status");
+        System.out.println("-----------------------------------------------");
+
+        while (resultSet.next()) {
+            int taskId = resultSet.getInt("t_id");
+            String startDate = resultSet.getString("t_start_date");
+            String endDate = resultSet.getString("t_end_date");
+            String status = resultSet.getString("status");
+
+            System.out.printf("%-10d %-15s %-15s %-10s%n", taskId, startDate, endDate, status);
+        }
+        System.out.println();
+
+        System.out.println("Enter assignment details");
+        System.out.print("Enter task ID: ");
+        int taskId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter hotel name: ");
+        String hotelName = scanner.nextLine();
+
+        System.out.print("Enter room number: ");
+        int roomId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter housekeeper name: ");
+        String housekeeperName = scanner.nextLine();
+
+        System.out.println("Assignment details: Task: " + taskId + ", Hotel: " + hotelName + ", Room: " + roomId + ", Staff: " + housekeeperName);
+        System.out.print("Enter y/Y to confirm, anything else to discard: ");
+
+        String decision = scanner.nextLine();
+        if (!decision.equalsIgnoreCase("Y")) {
+            System.out.println("Operation discarded");
+            connection.close();
+            return;
+        }
+
+        connection.setAutoCommit(false);
+
+        String hksSql = """
+                INSERT INTO housekeeping_staff (hk_id, t_id)
+                SELECT hk_id, ?
+                FROM housekeeper
+                JOIN user ON housekeeper.hk_id = user.u_id
+                WHERE user.u_name = ?
+                """;
+        PreparedStatement hksPreparedStatement = connection.prepareStatement(hksSql);
+        hksPreparedStatement.setInt(1, taskId);
+        hksPreparedStatement.setString(2, housekeeperName);
+
+        int rowCount = hksPreparedStatement.executeUpdate();
+        if (rowCount == 0) {
+            connection.rollback();
+            throw new Exception("Failed to assign task to housekeeper");
+        }
+
+        String hkrSql = """
+                INSERT INTO housekeeping_rooms (t_id, r_id, h_id, status)
+                SELECT ?, ?, h.h_id, 'dirty'
+                FROM hotel h
+                WHERE h.h_name = ? AND EXISTS(
+                    SELECT 1
+                    FROM room
+                    WHERE room.h_id = h.h_id AND room.r_id = ?
+                )
+                """;
+        PreparedStatement hkrPreparedStatement = connection.prepareStatement(hkrSql);
+        hkrPreparedStatement.setInt(1, taskId);
+        hkrPreparedStatement.setInt(2, roomId);
+        hkrPreparedStatement.setString(3, hotelName);
+        hkrPreparedStatement.setInt(4, roomId);
+
+        rowCount = hkrPreparedStatement.executeUpdate();
+        if (rowCount == 0) {
+            connection.rollback();
+            throw new Exception("Failed to assign room to task");
+        }
+
+        connection.commit();
+        connection.close();
 
     }
 
