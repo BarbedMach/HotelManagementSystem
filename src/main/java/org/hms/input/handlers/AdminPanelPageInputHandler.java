@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Date;
 import java.util.Scanner;
 
 public class AdminPanelPageInputHandler extends InputHandlerBase {
@@ -604,6 +605,40 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         connection.close();
     }
 
+    private void displayAllBookingRecords() throws Exception {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT h_name, user.u_name, total_guests, check_in_date, check_out_date, status
+                FROM booking
+                JOIN user ON u_id = booking.g_id
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.printf("%-20s %-20s %-15s %-15s %-15s %-10s%n",
+                "Hotel Name", "User Name", "Total Guests", "Check-in Date", "Check-out Date", "Status");
+        System.out.println("---------------------------------------------------------------------------------------------");
+
+        while (resultSet.next()) {
+            String hotelName = resultSet.getString("h_name");
+            String userName = resultSet.getString("u_name");
+            int totalGuests = resultSet.getInt("total_guests");
+            Date checkInDate = resultSet.getDate("check_in_date");
+            Date checkOutDate = resultSet.getDate("check_out_date");
+            String status = resultSet.getString("status");
+
+            System.out.printf("%-20s %-20s %-15d %-15s %-15s %-10s%n",
+                    hotelName, userName, totalGuests, checkInDate, checkOutDate, status);
+        }
+        System.out.println();
+
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+    }
+
     @Override
     public void handleInput() {
         boolean terminated = false;
@@ -719,6 +754,14 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 13 -> {
                     try {
                         deleteRoomType();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 14 -> {
+                    try {
+                        displayAllBookingRecords();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }

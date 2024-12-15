@@ -147,7 +147,7 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
                 """;
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setInt(1, staffId);  // Temizlik görevlisinin ID'sini parametre olarak ekliyoruz
+        preparedStatement.setString(1, userName);  // Temizlik görevlisinin ID'sini parametre olarak ekliyoruz
 
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
             System.out.println("My Cleaning Schedule:");
