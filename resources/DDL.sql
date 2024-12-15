@@ -51,13 +51,11 @@ CREATE TABLE IF NOT EXISTS housekeeper (
     );
 
 CREATE TABLE IF NOT EXISTS housekeeping_schedule (
-                                                     t_id INT PRIMARY KEY,
+                                                     t_id INT AUTO_INCREMENT PRIMARY KEY,
                                                      t_start_date DATE NOT NULL,
-                                                     t_end_time TIME NOT NULL,
-                                                     status VARCHAR(10),
-    hk_id INT,
-    FOREIGN KEY (hk_id) REFERENCES housekeeper(hk_id) ON DELETE SET NULL
-    );
+                                                     t_end_date DATE NOT NULL,
+                                                     status VARCHAR(10)
+);
 
 CREATE TABLE IF NOT EXISTS housekeeping_staff (
                                                   hk_id INT,
@@ -70,10 +68,11 @@ CREATE TABLE IF NOT EXISTS housekeeping_staff (
 CREATE TABLE IF NOT EXISTS housekeeping_rooms (
                                                   t_id INT,
                                                   r_id INT,
-                                                  PRIMARY KEY (t_id, r_id),
+                                                  h_id INT,
+                                                  PRIMARY KEY (t_id, r_id, h_id),
                                                   status VARCHAR(10),
     FOREIGN KEY (t_id) REFERENCES housekeeping_schedule(t_id) ON DELETE CASCADE,
-    FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE CASCADE
+    FOREIGN KEY (r_id, h_id) REFERENCES room(r_id, h_id) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS booking (

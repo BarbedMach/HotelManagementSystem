@@ -9,9 +9,10 @@ public class ReceptionistPanelPage extends PageBase {
         super.getOptions().put(1, "Add New Reservation");
         super.getOptions().put(2, "View Bookings and Reservations");
         super.getOptions().put(3, "Delete Reservation");
-        super.getOptions().put(4, "Assign Housekeeping Task");
-        super.getOptions().put(5, "View All Housekeepers and Their Availability");
-        super.getOptions().put(6, "Process Payment");
+        super.getOptions().put(4, "Create Housekeeping Task");
+        super.getOptions().put(5, "Assign Housekeeping Task");
+        super.getOptions().put(6, "View All Housekeepers and Their Availability");
+        super.getOptions().put(7, "Process Payment");
         super.getOptions().put(8, "Log Out and Return to Main Menu");
         super.getOptions().put(9, "Exit");
     }
