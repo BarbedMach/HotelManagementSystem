@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 public class HouseKeepingInputHandler extends InputHandlerBase{
     public HouseKeepingInputHandler(View view) {
@@ -123,31 +124,28 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
         }
     }
     private void displayMyCleaningSchedule() throws SQLException {
-        String userName = view.getController().getUsername(); // Bu metod, kullanıcıdan temizlik görevlisinin ID'sini alabilir.
+        String userName = view.getController().getUsername();
 
-        // Temizlik görevlisinin görevli olduğu odaların listesini almak için sorgu yazıyoruz
+
         DataSource ds = new DataSource();
         Connection connection = ds.getConnection();
 
-        // SQL sorgusu, temizlik görevlisinin görevli olduğu odaları listeliyor.
+
         String sql = """
-                  SELECT
-                       housekeeping_rooms.r_id AS Room_ID,
-                       h_id AS Hotel_ID,
-                       h_name AS Hotel_Name,
-                       housekeeping_rooms.status AS Room_Status
-                  FROM
-                       housekeeping_rooms
-                  JOIN
-                       hotel ON room.h_id = hotel.h_id
-                  JOIN
-                       housekeeping_rooms ON room.r_id = housekeeping_rooms.r_id
-                  WHERE
-                       housekeeping_rooms.staff_id = ?;  -- Temizlik görevlisinin ID'si
+                SELECT
+                                       housekeeping_rooms.r_id AS Room_ID,
+                                       housekeeping_rooms.h_id AS Hotel_ID,
+                                       hotel.h_name AS Hotel_Name,
+                                       housekeeping_rooms.status AS Room_Status
+                                  FROM
+                                       housekeeping_rooms
+                                  INNER JOIN hotel ON housekeeping_rooms.h_id = hotel.h_id
+                                  WHERE housekeeping_rooms.assigned_to = ?
+                                  ORDER BY housekeeping_rooms.r_id;
                 """;
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, userName);  // Temizlik görevlisinin ID'sini parametre olarak ekliyoruz
+        preparedStatement.setString(1, userName);
 
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
             System.out.println("My Cleaning Schedule:");
@@ -160,7 +158,7 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
                 String hotelName = resultSet.getString("Hotel_Name");
                 String roomStatus = resultSet.getString("Room_Status");
 
-                // Temizlik görevlisinin görevli olduğu odaların bilgilerini yazdırıyoruz
+
                 System.out.printf("%-10d %-10d %-20s %-10s%n", roomId, hotelId, hotelName, roomStatus);
             }
         } finally {
@@ -169,5 +167,59 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
         }
     }
 
-    public void handleInput() {}
+    public void handleInput() {
+        boolean terminated = false;
+        Scanner scanner = new Scanner(System.in);
+
+        while (!terminated) {
+            System.out.print("Enter number: ");
+
+            while (!scanner.hasNextInt()) {
+                System.out.print("Enter number: ");
+                scanner.next();
+            }
+
+            int number = scanner.nextInt();
+
+            switch (number) {
+                case 1 -> {
+                    try {
+                        displayPendingHousekeeping();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 2 -> {
+                    try {
+                        displayCompletedHousekeeping();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 3 -> {
+                    try {
+                        updateTaskStatusToCompleted();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 4 -> {
+                    try {
+                        displayMyCleaningSchedule();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 8 -> {
+                    terminated = true;
+                    view.display("LANDING");
+                }
+                case 9 -> System.exit(0);
+            }
+        }
+    }
 }
