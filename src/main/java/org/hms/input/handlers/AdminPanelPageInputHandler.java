@@ -714,6 +714,38 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         connection.close();
     }
 
+    private void generateRevenueReport() throws Exception {
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sql = """
+                SELECT hotel.h_name, SUM(payments.amount), COUNT(DISTINCT booking.b_id)
+                FROM payments
+                JOIN booking ON payments.b_id = booking.b_id
+                JOIN hotel ON booking.h_name = hotel.h_name
+                GROUP BY hotel.h_name
+                ORDER BY SUM(payments.amount) DESC
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.printf("%-25s %-20s %-15s%n", "Hotel Name", "Total Revenue", "Total Bookings");
+        System.out.println("------------------------------------------------------------------");
+
+        while (resultSet.next()) {
+            String hotelName = resultSet.getString("HotelName");
+            double totalRevenue = resultSet.getDouble("TotalRevenue");
+            int totalBookings = resultSet.getInt("TotalBookings");
+
+            System.out.printf("%-25s %-20.2f %-15d%n", hotelName, totalRevenue, totalBookings);
+        }
+        System.out.println();
+
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+    }
+
     @Override
     public void handleInput() {
         boolean terminated = false;
@@ -853,6 +885,14 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
                 case 16 -> {
                     try {
                         displayAllHousekeepingRecords();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    view.display();
+                }
+                case 17 -> {
+                    try {
+                        generateRevenueReport();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }

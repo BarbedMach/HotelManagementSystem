@@ -21,6 +21,7 @@ public class AdminPanelPage extends PageBase {
         super.getOptions().put(14, "Display All Booking Records");
         super.getOptions().put(15, "View Most Booked Room Types");
         super.getOptions().put(16, "Display All Housekeeping Records");
+        super.getOptions().put(17, "Generate Revenue Report");
         super.getOptions().put(90, "Log Out and Return to Main Menu");
         super.getOptions().put(99, "Exit");
     }
