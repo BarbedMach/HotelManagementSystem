@@ -610,7 +610,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         Connection connection = ds.getConnection();
 
         String sql = """
-                SELECT h_name, user.u_name, total_guests, check_in_date, check_out_date, status
+                SELECT h_name, user.u_name, total_guests, check_in_date, check_out_date, booking.status AS Status
                 FROM booking
                 JOIN user ON u_id = booking.g_id
                 """;
@@ -627,7 +627,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
             int totalGuests = resultSet.getInt("total_guests");
             Date checkInDate = resultSet.getDate("check_in_date");
             Date checkOutDate = resultSet.getDate("check_out_date");
-            String status = resultSet.getString("status");
+            String status = resultSet.getString("Status");
 
             System.out.printf("%-20s %-20s %-15d %-15s %-15s %-10s%n",
                     hotelName, userName, totalGuests, checkInDate, checkOutDate, status);
@@ -678,7 +678,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         String sql = """
                 SELECT t_start_date AS Start,
                        t_end_date AS End,
-                       status AS Status,
+                       housekeeping_schedule.status AS Status,
                        h_name AS Hotel,
                        housekeeping_rooms.r_id AS Room,
                        u_name AS Staff
@@ -719,7 +719,9 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
         Connection connection = ds.getConnection();
 
         String sql = """
-                SELECT hotel.h_name, SUM(payments.amount), COUNT(DISTINCT booking.b_id)
+                SELECT hotel.h_name AS HotelName,
+                       SUM(payments.amount) AS TotalRevenue,
+                       COUNT(DISTINCT booking.b_id) AS TotalBookings
                 FROM payments
                 JOIN booking ON payments.b_id = booking.b_id
                 JOIN hotel ON booking.h_name = hotel.h_name

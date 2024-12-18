@@ -14,25 +14,65 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
     private void addNewReservation() throws Exception {
         Scanner scanner = new Scanner(System.in);
 
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sqlInfo = """
+                SELECT booking.b_id AS BookingID,
+                       h_name AS HotelName,
+                       u_name AS GuestName,
+                       total_guests AS TotalGuests,
+                       r_id AS RoomID,
+                       status AS BookingStatus
+                FROM booking
+                LEFT JOIN reservations ON booking.b_id = reservations.b_id
+                JOIN user ON user.u_id = booking.g_id
+                ORDER BY h_name, u_name, total_guests, r_id
+                """;
+
+        PreparedStatement preparedStatement = connection.prepareStatement(sqlInfo);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        StringBuilder output = new StringBuilder();
+        output.append(String.format("%-10s %-20s %-20s %-15s %-10s %-15s%n",
+                "Booking ID", "Hotel Name", "Guest Name", "Total Guests", "Room ID", "Booking Status"));
+        output.append("-----------------------------------------------------------------------------------------\n");
+
+        while (resultSet.next()) {
+            int bookingId = resultSet.getInt("BookingID");
+            String hotelName = resultSet.getString("HotelName");
+            String guestName = resultSet.getString("GuestName");
+            int totalGuests = resultSet.getInt("TotalGuests");
+            int roomId = resultSet.getInt("RoomID");
+            String bookingStatus = resultSet.getString("BookingStatus");
+
+            output.append(String.format("%-10d %-20s %-20s %-15d %-10s %-15s%n",
+                    bookingId, hotelName, guestName, totalGuests,
+                    (roomId == 0 ? "N/A" : String.valueOf(roomId)), bookingStatus));
+        }
+
+        System.out.println(output);
+
         System.out.println("Enter the reservation details");
+        System.out.print("Enter booking ID: ");
+        int bookingID = Integer.parseInt(scanner.nextLine());
+
         System.out.print("Enter hotel name: ");
         String hotelName = scanner.nextLine();
 
         System.out.print("Enter room number: ");
         int roomID = Integer.parseInt(scanner.nextLine());
 
-        DataSource ds = new DataSource();
-        Connection connection = ds.getConnection();
-
         String sql = """
-                INSERT INTO reservations
-                SELECT h_id, ?
+                INSERT INTO reservations (b_id, h_id, r_id)
+                SELECT ?, h_id, ?
                 FROM hotel
                 WHERE h_name = ?
                 """;
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setInt(1, roomID);
-        preparedStatement.setString(2, hotelName);
+        preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, bookingID);
+        preparedStatement.setInt(2, roomID);
+        preparedStatement.setString(3, hotelName);
 
         System.out.print("Enter y/Y to confirm, anything else to discard: ");
 
@@ -44,6 +84,20 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
         }
 
         int rowCount = preparedStatement.executeUpdate();
+        if (rowCount == 0) {
+            connection.close();
+            throw new Exception("Failed to add reservation");
+        }
+
+        sql = """
+            UPDATE booking
+            SET booking.status = 'p_pending'
+            WHERE b_id = ?
+        """;
+        PreparedStatement preparedStatement2 = connection.prepareStatement(sql);
+        preparedStatement2.setInt(1, bookingID);
+
+        rowCount = preparedStatement2.executeUpdate();
         if (rowCount == 0) {
             connection.close();
             throw new Exception("Failed to add reservation");
@@ -96,6 +150,46 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
 
     private void deleteReservation() throws Exception {
         Scanner scanner = new Scanner(System.in);
+        DataSource ds = new DataSource();
+        Connection connection = ds.getConnection();
+
+        String sqlInfo = """
+                SELECT booking.b_id AS BookingID,
+                       h_name AS HotelName,
+                       u_name AS GuestName,
+                       total_guests AS TotalGuests,
+                       r_id AS RoomID,
+                       status AS BookingStatus
+                FROM booking
+                LEFT JOIN reservations ON booking.b_id = reservations.b_id
+                JOIN user ON user.u_id = booking.g_id
+                ORDER BY h_name, u_name, total_guests, r_id
+                """;
+
+        PreparedStatement preparedStatement = connection.prepareStatement(sqlInfo);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        StringBuilder output = new StringBuilder();
+        output.append(String.format("%-10s %-20s %-20s %-15s %-10s %-15s%n",
+                "Booking ID", "Hotel Name", "Guest Name", "Total Guests", "Room ID", "Booking Status"));
+        output.append("-----------------------------------------------------------------------------------------\n");
+
+        while (resultSet.next()) {
+            int bookingId = resultSet.getInt("BookingID");
+            String hotelName = resultSet.getString("HotelName");
+            String guestName = resultSet.getString("GuestName");
+            int totalGuests = resultSet.getInt("TotalGuests");
+            int roomId = resultSet.getInt("RoomID");
+            String bookingStatus = resultSet.getString("BookingStatus");
+
+            output.append(String.format("%-10d %-20s %-20s %-15d %-10s %-15s%n",
+                    bookingId, hotelName, guestName, totalGuests,
+                    (roomId == 0 ? "N/A" : String.valueOf(roomId)), bookingStatus));
+        }
+
+        System.out.println(output);
+
+
         System.out.println("Enter the reservation details");
         System.out.print("Enter hotel name: ");
         String hotelName = scanner.nextLine();
@@ -103,18 +197,21 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
         System.out.print("Enter room number: ");
         int roomID = Integer.parseInt(scanner.nextLine());
 
-        DataSource ds = new DataSource();
-        Connection connection = ds.getConnection();
+        System.out.print("Enter booking ID: ");
+        int bookingID = Integer.parseInt(scanner.nextLine());
 
         String sql = """
                 DELETE FROM reservations
-                WHERE reservations.r_id = ? AND reservations.b_id = (SELECT b_id
+                WHERE reservations.r_id = ? AND reservations.b_id = ? AND reservations.h_id = (SELECT h_id
                                                                      FROM booking
-                                                                     WHERE h_name = ?)
+                                                                     JOIN hotel ON hotel.h_name = booking.h_name
+                                                                     WHERE hotel.h_name = ?
+                                                                     LIMIT 1)
                 """;
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setInt(1, roomID);
-        preparedStatement.setString(2, hotelName);
+        preparedStatement.setInt(2, bookingID);
+        preparedStatement.setString(3, hotelName);
 
         System.out.print("Enter y/Y to confirm, anything else to discard: ");
 
@@ -369,6 +466,8 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
                 WHERE b_id = ?
                 """;
         PreparedStatement updateBookingStatusStatement = connection.prepareStatement(updateBookingStatusSql);
+        updateBookingStatusStatement.setInt(1, bookingId);
+
         rowCount = updateBookingStatusStatement.executeUpdate();
         if (rowCount == 0) {
             connection.rollback();

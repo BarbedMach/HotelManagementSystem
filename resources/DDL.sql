@@ -90,13 +90,15 @@ CREATE TABLE IF NOT EXISTS booking (
 CREATE TABLE IF NOT EXISTS reservations (
                                             b_id INT,
                                             r_id INT,
+                                            h_id INT,
                                             PRIMARY KEY (b_id, r_id),
     FOREIGN KEY (b_id) REFERENCES booking(b_id) ON DELETE CASCADE,
-    FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE CASCADE
+    FOREIGN KEY (r_id) REFERENCES room(r_id) ON DELETE CASCADE,
+    FOREIGN KEY (h_id) REFERENCES room(h_id) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS payments (
-                                        p_id INT PRIMARY KEY,
+                                        p_id INT AUTO_INCREMENT PRIMARY KEY,
                                         b_id INT NOT NULL,
                                         status VARCHAR(10),
     amount DECIMAL(10,2) NOT NULL,
