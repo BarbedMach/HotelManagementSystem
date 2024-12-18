@@ -77,7 +77,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         String sql = """
                 SELECT h_name, h_zip, h_street, h_building_no, h_phone_no
-                FROM hotel;
+                FROM hotel
                 """;
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
@@ -677,7 +677,7 @@ public class AdminPanelPageInputHandler extends InputHandlerBase {
 
         String sql = """
                 SELECT t_start_date AS Start,
-                       t_end_time AS End,
+                       t_end_date AS End,
                        status AS Status,
                        h_name AS Hotel,
                        housekeeping_rooms.r_id AS Room,
