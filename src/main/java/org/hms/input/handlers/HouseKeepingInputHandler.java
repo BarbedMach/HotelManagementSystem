@@ -20,17 +20,17 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
 
         String sql = """
                               SELECT
-                                   housekeeping_rooms.r_id AS Room_ID,           
-                                   h_id AS Hotel_ID,         
+                                   housekeeping_rooms.r_id AS Room_ID,
+                                   h_id AS Hotel_ID,
                                    h_name AS Hotel_Name
                                FROM
                                    housekeeping_rooms
                                JOIN
                                    room r on housekeeping_rooms.r_id = r.r_id
-                                JOIN 
+                                JOIN
                                    hotel h on r.h_id = h.h_id
                                WHERE
-                                   housekeeping_rooms.status = 'dirty';  
+                                   housekeeping_rooms.status = 'dirty'
                 """;
 
 
@@ -61,24 +61,24 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
 
         String sql = """
                               SELECT
-                                   housekeeping_rooms.r_id AS Room_ID,           
-                                   h_id AS Hotel_ID,         
+                                   housekeeping_rooms.r_id AS Room_ID,
+                                   h_id AS Hotel_ID,
                                    h_name AS Hotel_Name
                                FROM
                                    housekeeping_rooms
                                JOIN
                                    room r on housekeeping_rooms.r_id = r.r_id
-                                JOIN 
+                                JOIN
                                    hotel h on r.h_id = h.h_id
                                WHERE
-                                   housekeeping_rooms.status = 'clean';  
+                                   housekeeping_rooms.status = 'clean'
                 """;
 
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
-            System.out.println("Pending Housekeeping Tasks:");
+            System.out.println("Completed Housekeeping Tasks:");
             System.out.printf("%-10s %-10s %-20s%n", "Room ID", "Hotel ID", "Hotel Name");
             System.out.println("----------------------------------------------------");
 
@@ -95,14 +95,26 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
             connection.close();
         }
     }
-    private void updateTaskStatusToCompleted(int r_id) throws Exception{
+    private void updateTaskStatusToCompleted() throws Exception{
         DataSource ds = new DataSource();
         Connection connection = ds.getConnection();
 
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter hotel name: ");
+        String hotelName = scanner.nextLine();
+
+        System.out.print("Enter Room ID: ");
+        int r_id = Integer.parseInt(scanner.nextLine());
+
         String sql = """
-                  UPDATE housekeeping_rooms 
+                  UPDATE housekeeping_rooms
                   SET housekeeping_rooms.status = 'clean'
-                  WHERE r_id = ?;
+                  WHERE r_id = ? AND h_id = (
+                      SELECT h_id
+                      FROM hotel
+                      WHERE h_name = ?
+                  )
                 """;
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -110,6 +122,7 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
         try {
 
             preparedStatement.setInt(1, r_id);
+            preparedStatement.setString(2, hotelName);
 
             int rowsUpdated = preparedStatement.executeUpdate();
 
@@ -133,15 +146,16 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
 
         String sql = """
                 SELECT
-                                       housekeeping_rooms.r_id AS Room_ID,
-                                       housekeeping_rooms.h_id AS Hotel_ID,
-                                       hotel.h_name AS Hotel_Name,
-                                       housekeeping_rooms.status AS Room_Status
-                                  FROM
-                                       housekeeping_rooms
-                                  INNER JOIN hotel ON housekeeping_rooms.h_id = hotel.h_id
-                                  WHERE housekeeping_rooms.assigned_to = ?
-                                  ORDER BY housekeeping_rooms.r_id;
+                    housekeeping_rooms.r_id AS Room_ID,
+                    housekeeping_rooms.h_id AS Hotel_ID,
+                    hotel.h_name AS Hotel_Name,
+                    housekeeping_rooms.status AS Room_Status
+                FROM user
+                JOIN housekeeping_staff ON user.u_id = housekeeping_staff.hk_id
+                JOIN housekeeping_schedule ON housekeeping_staff.t_id = housekeeping_schedule.t_id
+                JOIN housekeeping_rooms ON housekeeping_schedule.t_id = housekeeping_rooms.t_id
+                JOIN hotel ON hotel.h_id = housekeeping_rooms.h_id
+                WHERE user.u_name = ?
                 """;
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
