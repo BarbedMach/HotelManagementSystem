@@ -99,9 +99,9 @@ public class GuestPanelInputHandler extends InputHandlerBase {
             System.out.println("----------------------------------------------------");
 
             while (resultSet.next()) {
-                String type = resultSet.getString("Room Type");
+                String type = resultSet.getString("Room_Type");
                 String capacity = resultSet.getString("Capacity");
-                String name = resultSet.getString("Hotel Name");
+                String name = resultSet.getString("Hotel_Name");
 
                 System.out.printf("%-20s %-10s %-20s%n", type, capacity, name);
             }
@@ -133,9 +133,11 @@ public class GuestPanelInputHandler extends InputHandlerBase {
                                     user.u_name = ?;
                 """;
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, view.getController().getUsername());
 
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
             System.out.println("My Bookings::");
+
             System.out.printf("%-10s %-20s %-15s %-15s %-15s %-10s%n",
                     "ID", "Hotel Name", "Guests", "Check-In", "Check-Out", "Status");
             System.out.println("----------------------------------------------------");

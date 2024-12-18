@@ -14,6 +14,7 @@ public class Controller {
     private AdminPanelPageInputHandler adminPanelPageInputHandler;
     private GuestPanelInputHandler guestPanelInputHandler;
     private ReceptionistPanelInputHandler receptionistPanelInputHandler;
+    private HouseKeepingInputHandler houseKeepingInputHandler;
 
     private User userType = User.NULL;
 
@@ -29,6 +30,7 @@ public class Controller {
         adminPanelPageInputHandler = new AdminPanelPageInputHandler(view);
         guestPanelInputHandler = new GuestPanelInputHandler(view);
         receptionistPanelInputHandler = new ReceptionistPanelInputHandler(view);
+        houseKeepingInputHandler = new HouseKeepingInputHandler(view);
     }
 
     public Controller(View view) {
@@ -61,6 +63,10 @@ public class Controller {
 
         if (currentPage.equals(view.getPage("RECEPTIONIST"))) {
             receptionistPanelInputHandler.handleInput();
+        }
+
+        if (currentPage.equals(view.getPage("HOUSEKEEPER"))) {
+            houseKeepingInputHandler.handleInput();
         }
 
     }

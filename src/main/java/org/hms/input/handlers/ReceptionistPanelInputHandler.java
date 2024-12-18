@@ -3,10 +3,7 @@ package org.hms.input.handlers;
 import org.hms.View;
 import org.hms.database.DataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Scanner;
 
 public class ReceptionistPanelInputHandler extends InputHandlerBase {
@@ -61,7 +58,11 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
         Connection connection = ds.getConnection();
 
         String sql = """
-                SELECT h_name, u_name, total_guests, r_id, status
+                SELECT h_name AS HotelName,
+                       u_name AS GuestName,
+                       total_guests AS TotalGuests,
+                       r_id AS RoomID,
+                       status AS BookingStatus
                 FROM booking
                 LEFT JOIN reservations ON booking.b_id = reservations.b_id
                 JOIN user ON user.u_id = booking.g_id
@@ -150,7 +151,7 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
                 INSERT INTO housekeeping_schedule (t_start_date, t_end_date, status)
                 VALUES (?, ?, 'waiting')
                 """;
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         preparedStatement.setString(1, startDate);
         preparedStatement.setString(2, endDate);
 
@@ -281,7 +282,8 @@ public class ReceptionistPanelInputHandler extends InputHandlerBase {
         Connection connection = ds.getConnection();
 
         String sql = """
-                SELECT user.u_name, COUNT(housekeeping_staff.t_id)
+                SELECT user.u_name AS Housekeeper,
+                    COUNT(housekeeping_staff.t_id) AS TaskCount
                 FROM housekeeper
                 JOIN user ON housekeeper.hk_id = user.u_id
                 LEFT JOIN housekeeping_staff ON housekeeper.hk_id = housekeeping_staff.hk_id

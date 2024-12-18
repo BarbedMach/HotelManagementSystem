@@ -21,7 +21,7 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
         String sql = """
                               SELECT
                                    housekeeping_rooms.r_id AS Room_ID,
-                                   h_id AS Hotel_ID,
+                                   h.h_id AS Hotel_ID,
                                    h_name AS Hotel_Name
                                FROM
                                    housekeeping_rooms
@@ -62,7 +62,7 @@ public class HouseKeepingInputHandler extends InputHandlerBase{
         String sql = """
                               SELECT
                                    housekeeping_rooms.r_id AS Room_ID,
-                                   h_id AS Hotel_ID,
+                                   h.h_id AS Hotel_ID,
                                    h_name AS Hotel_Name
                                FROM
                                    housekeeping_rooms

@@ -107,7 +107,7 @@ public class LoginPageInputHandler extends InputHandlerBase {
         String checkIfReceptionistQuery = """
                SELECT COUNT(*) FROM receptionist
                JOIN user ON receptionist.r_id = user.u_id
-               WHERE user.u_id = ? AND user.u_password = ?
+               WHERE user.u_name = ? AND user.u_password = ?
                """;
 
         PreparedStatement checkIfReceptionistStatement = connection.prepareStatement(checkIfReceptionistQuery);
