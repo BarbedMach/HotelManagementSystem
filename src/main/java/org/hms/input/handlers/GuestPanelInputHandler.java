@@ -131,7 +131,6 @@ public class GuestPanelInputHandler extends InputHandlerBase {
                                     user ON booking.g_id = user.u_id
                                 WHERE
                                     user.u_name = ?;
-                         
                 """;
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
